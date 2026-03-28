@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>Map</title>
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+
+  <script src='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js'></script>
+  <script src="https://unpkg.com/@turf/turf@7.3.1/turf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/osmtogeojson@3.0.0-beta.5/osmtogeojson.min.js"></script>
+  <script src="https://openingh.openstreetmap.de/opening_hours.js/opening_hours+deps.min.js"></script>
+
+  <link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
+  <link href="style.css" rel="stylesheet" />
+
+  <!-- lets-icons:map-fill -->
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGZpbGwtcnVsZT0iZXZlbm9kZCIgZD0iTTQuMjE4IDQuMDkyQzQgNC41MiA0IDUuMDggNCA2LjJ2LjYxNGwxNy45OS0xLjYzNmMtLjAxOS0uNDg4LS4wNy0uODE0LS4yMDgtMS4wODZhMiAyIDAgMCAwLS44NzQtLjg3NEMyMC40OCAzIDE5LjkyIDMgMTguOCAzSDcuMmMtMS4xMiAwLTEuNjggMC0yLjEwOC4yMThhMiAyIDAgMCAwLS44NzQuODc0TTIyIDcuMTg2bC00Ljg2NS40NDJsMi41MDYgMTMuMzY3Yy41OTItLjAxMy45NjMtLjA1OCAxLjI2Ny0uMjEzYTIgMiAwIDAgMCAuODc0LS44NzRDMjIgMTkuNDggMjIgMTguOTIgMjIgMTcuOHpNMTcuNjA4IDIxTDE1LjEzNCA3LjgxTDQgOC44MjJWMTcuOGMwIDEuMTIgMCAxLjY4LjIxOCAyLjEwOGEyIDIgMCAwIDAgLjg3NC44NzRDNS41MiAyMSA2LjA4IDIxIDcuMiAyMXpNMTMuNSAxNS4wM2MwIDIuMTU4LTIuMTQgMy42NzQtMy4wNzMgNC4yMzNhLjgzLjgzIDAgMCAxLS44NTQgMEM4LjY0IDE4LjcwNCA2LjUgMTcuMTg4IDYuNSAxNS4wMjljMC0yLjExNyAxLjY5Ni0zLjUyOSAzLjUtMy41MjljMS44NjcgMCAzLjUgMS40MTIgMy41IDMuNTMiIGNsaXAtcnVsZT0iZXZlbm9kZCIvPjxjaXJjbGUgY3g9IjEwIiBjeT0iMTUiIHI9IjEiIGZpbGw9ImN1cnJlbnRDb2xvciIvPjwvc3ZnPg==" />
+</head>
+
+<body>
+  <div id="container">
+    <div id="map"></div>
+    <div id="sidebar" class="hidden">
+      <h2 id="title"></h2>
+      <p id="type"></p>
+      <p id="description"></p>
+      <div id="contact-section" style="display:none; margin-bottom:10px;">
+        <dl id="address"></dl>
+        <dl id="contact"></dl>
+      </div>
+      <div id="images">
+        <div id="main-image"></div>
+        <div id="other-images"></div>
+      </div>
+      <p id="extract" style="white-space: pre-line;"></p>
+      <details id="links-details" style="display: none;">
+        <summary>Links</summary>
+        <div id="links">
+        </div>
+      </details>
+      <details id="openstreetmap-details" style="display: none;">
+        <summary>OpenStreetMap</summary>
+        <dl id="openstreetmap">
+        </dl>
+      </details>
+    </div>
+  </div>
+  <script src="application.js"></script>
+</body>
+
+</html>
