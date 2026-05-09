@@ -33,6 +33,17 @@ map.addControl(
   })
 );
 
+map.addControl(
+  new maplibregl.GeolocateControl({
+    positionOptions: {
+      enableHighAccuracy: true
+    },
+    trackUserLocation: true,
+    showAccuracyCircle: true,
+    showUserHeading: true
+  })
+);
+
 function createImage(src, alt) {
   let div = document.createElement('div');
   div.className = 'image-wrapper';
