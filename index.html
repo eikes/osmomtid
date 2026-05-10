@@ -12,6 +12,7 @@
   <script src="https://openingh.openstreetmap.de/opening_hours.js/opening_hours+deps.min.js"></script>
 
   <link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
+
   <link href="style.css" rel="stylesheet" />
 
   <!-- lets-icons:map-fill -->
@@ -23,7 +24,10 @@
   <div id="container">
     <div id="map"></div>
     <div id="sidebar" class="hidden">
-      <h2 id="title"></h2>
+      <div id="title-row">
+        <h2 id="title"></h2>
+        <button id="favorite-toggle" type="button" aria-label="Save as favorite" title="Save as favorite">♡</button>
+      </div>
       <p id="type"></p>
       <p id="description"></p>
       <div id="contact-section" style="display:none; margin-bottom:10px;">

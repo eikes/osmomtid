@@ -44,6 +44,37 @@
   font-size: 1.3em;
 }
 
+#title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+#favorite-toggle {
+  border: 1px solid #c9d8ff;
+  background: #f3f7ff;
+  color: #4974d8;
+  border-radius: 8px;
+  font-size: 24px;
+  line-height: 1;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+#favorite-toggle.active {
+  background: #1f5ed7;
+  border-color: #1f5ed7;
+  color: #fff;
+}
+
+#favorite-toggle.hidden {
+  display: none;
+}
+
 #openstreetmap,
 #wikidata,
 #description {
@@ -125,6 +156,27 @@ body {
 .mapbox-ctrl-styles button {
   width: 100%;
   padding: 2px 8px;
+}
+
+.favorites-layer-toggle {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  background: #fff;
+  color: #1f5ed7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.favorites-layer-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.favorites-layer-toggle.inactive {
+  color: #8ea0b8;
 }
 
 @media (max-width: 800px) {

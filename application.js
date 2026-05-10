@@ -11,6 +11,173 @@ let contactSectionElem = document.getElementById('contact-section');
 let contactElem = document.getElementById('contact');
 let addressElem = document.getElementById('address');
 let extractElem = document.getElementById('extract');
+let favoriteToggleElem = document.getElementById('favorite-toggle');
+
+const favoritesStorageKey = 'map-favorites-v1';
+let currentElementSelection = null;
+const favoritesLayerId = 'favorites-layer';
+let favoritesLayerVisible = true;
+
+function loadFavorites() {
+  try {
+    let raw = localStorage.getItem(favoritesStorageKey);
+    let parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.warn('Could not parse favorites from localStorage', error);
+    return [];
+  }
+}
+
+let favorites = loadFavorites();
+
+function saveFavorites() {
+  localStorage.setItem(favoritesStorageKey, JSON.stringify(favorites));
+}
+
+function favoriteId(osm_type, osm_id) {
+  return `${osm_type}/${osm_id}`;
+}
+
+function isFavorite(osm_type, osm_id) {
+  return favorites.some(favorite => favorite.id === favoriteId(osm_type, osm_id));
+}
+
+function collectFavoriteFeatures() {
+  let features = favorites
+    .map(favorite => {
+      if (!favorite.geojson) return null;
+      try {
+        let center = turf.center(favorite.geojson);
+        return {
+          type: 'Feature',
+          geometry: center.geometry,
+          properties: {
+            __favorite_osm_type: favorite.osm_type,
+            __favorite_osm_id: String(favorite.osm_id)
+          }
+        };
+      } catch (error) {
+        console.warn('Could not compute favorite center', favorite, error);
+        return null;
+      }
+    })
+    .filter(Boolean);
+
+  return {
+    type: 'FeatureCollection',
+    features: features
+  };
+}
+
+function renderFavoritesOnMap() {
+  let source = map.getSource('favorites-source');
+  if (!source) return;
+  source.setData(collectFavoriteFeatures());
+}
+
+function setFavoritesLayerVisibility(visible) {
+  favoritesLayerVisible = visible;
+  if (map.getLayer(favoritesLayerId)) {
+    map.setLayoutProperty(favoritesLayerId, 'visibility', visible ? 'visible' : 'none');
+  }
+}
+
+function addFavoritesLayerToggleControl() {
+  let FavoritesLayerToggleControl = class {
+    onAdd(mapInstance) {
+      this.map = mapInstance;
+      this.container = document.createElement('div');
+      this.container.className = 'maplibregl-ctrl maplibregl-ctrl-group';
+
+      this.button = document.createElement('button');
+      this.button.type = 'button';
+      this.button.className = 'favorites-layer-toggle';
+      this.button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 3 3 8.25 12 13.5 21 8.25 12 3"></polygon><polyline points="3 12.75 12 18 21 12.75"></polyline><polyline points="3 17.25 12 22 21 17.25"></polyline></svg>';
+      this.button.addEventListener('click', () => {
+        setFavoritesLayerVisibility(!favoritesLayerVisible);
+        this.syncState();
+      });
+
+      this.container.appendChild(this.button);
+      this.syncState();
+      return this.container;
+    }
+
+    syncState() {
+      this.button.classList.toggle('inactive', !favoritesLayerVisible);
+      this.button.title = favoritesLayerVisible ? 'Hide favorites layer' : 'Show favorites layer';
+      this.button.setAttribute('aria-label', this.button.title);
+      this.button.setAttribute('aria-pressed', favoritesLayerVisible ? 'true' : 'false');
+    }
+
+    onRemove() {
+      this.container.parentNode.removeChild(this.container);
+      this.map = undefined;
+    }
+  };
+
+  map.addControl(new FavoritesLayerToggleControl(), 'top-right');
+}
+
+function updateFavoriteButton() {
+  if (!favoriteToggleElem || !currentElementSelection) {
+    return;
+  }
+  let favorite = isFavorite(currentElementSelection.osm_type, currentElementSelection.osm_id);
+  favoriteToggleElem.textContent = favorite ? '♥' : '♡';
+  favoriteToggleElem.classList.toggle('active', favorite);
+  favoriteToggleElem.setAttribute('aria-label', favorite ? 'Remove favorite' : 'Save as favorite');
+  favoriteToggleElem.title = favorite ? 'Remove favorite' : 'Save as favorite';
+}
+
+function extractMainElementGeojson(data, osm_type, osm_id) {
+  let osmgeojson = osmtogeojson(data);
+  let selectedFeatures = osmgeojson.features.filter(feature => {
+    let props = feature.properties || {};
+    if (props.type === osm_type && String(props.id) === String(osm_id)) {
+      return true;
+    }
+    let fid = String(feature.id || '');
+    if (fid === `${osm_type}/${osm_id}` || fid === String(osm_id)) {
+      return true;
+    }
+    return false;
+  });
+
+  if (selectedFeatures.length === 0 && osmgeojson.features.length > 0) {
+    selectedFeatures = [osmgeojson.features[0]];
+  }
+
+  return {
+    type: 'FeatureCollection',
+    features: selectedFeatures
+  };
+}
+
+function toggleCurrentFavorite() {
+  if (!currentElementSelection) return;
+  let id = favoriteId(currentElementSelection.osm_type, currentElementSelection.osm_id);
+  let index = favorites.findIndex(favorite => favorite.id === id);
+
+  if (index >= 0) {
+    favorites.splice(index, 1);
+  } else {
+    favorites.push({
+      id: id,
+      osm_type: currentElementSelection.osm_type,
+      osm_id: currentElementSelection.osm_id,
+      title: currentElementSelection.title || '',
+      geojson: currentElementSelection.geojson
+    });
+  }
+
+  saveFavorites();
+  updateFavoriteButton();
+  renderFavoritesOnMap();
+}
+
+favoriteToggleElem.addEventListener('click', toggleCurrentFavorite);
 
 // let overpassBaseUrl = 'https://overpass-api.de/api/interpreter';
 let overpassBaseUrl = 'https://overpass.private.coffee/api/interpreter';
@@ -19,6 +186,7 @@ let overpassBaseUrl = 'https://overpass.private.coffee/api/interpreter';
 // MapLibre GL JS API docs: https://maplibre.org/maplibre-gl-js/docs/API/classes/Map/
 var map = new maplibregl.Map({
   container: "map",
+  hash: true,
   style: 'https://tiles.openfreemap.org/styles/liberty',
   center: [13.5, 52.5],
   zoom: 10
@@ -165,6 +333,9 @@ function clearSidebar() {
   titleElem.textContent = '';
   typeElem.textContent = '';
   descriptionElem.textContent = '';
+  favoriteToggleElem.classList.add('hidden');
+  favoriteToggleElem.classList.remove('active');
+  favoriteToggleElem.textContent = '♡';
   openstreetmapDetailsElem.open = false;
   openstreetmapElem.innerHTML = '';
   linksDetailsElem.style.display = 'none';
@@ -502,6 +673,7 @@ function showOverpassStreet(osm_type, osm_id, tags, data) {
 // Fetch OSM details
 function fetchFirstOsmDetails(osm_type, osm_id) {
   clearSidebar() 
+  currentElementSelection = null;
 
   // add a link to the OSM element:
   let osmUrl = `https://www.openstreetmap.org/${osm_type}/${osm_id}`;
@@ -570,6 +742,14 @@ function fetchSecondOsmDetails(osm_type, osm_id) {
       mainElement = data.elements.find(e => e.type === osm_type && e.id == osm_id);
     }
     let tags = mainElement.tags || {};
+    currentElementSelection = {
+      osm_type: osm_type,
+      osm_id: osm_id,
+      title: tags.name || tags.operator || '',
+      geojson: extractMainElementGeojson(data, osm_type, osm_id)
+    };
+    favoriteToggleElem.classList.remove('hidden');
+    updateFavoriteButton();
     console.log('OSM details for', osm_type, osm_id, tags);
     
     clearMapHighlight();
@@ -593,6 +773,32 @@ map.on('load', (e) => {
   layer_names = Object.keys(map.style._layers);
   console.log('Layer names:', layer_names);
 
+  map.addSource('favorites-source', {
+    'type': 'geojson',
+    'data': {
+      'type': 'FeatureCollection',
+      'features': []
+    }
+  });
+
+  map.addLayer({
+    'id': favoritesLayerId,
+    'type': 'circle',
+    'source': 'favorites-source',
+    'paint': {
+      'circle-color': '#0055cc',
+      'circle-radius': [
+        'interpolate', ['linear'], ['zoom'],
+        4, 4,
+        10, 8,
+        16, 12
+      ],
+      'circle-stroke-color': '#ffffff',
+      'circle-stroke-width': 2,
+      'circle-stroke-opacity': 0.9
+    }
+  });
+
   map.addSource('highlighted-feature-source', {
     'type': 'geojson',
     'data': {
@@ -601,13 +807,39 @@ map.on('load', (e) => {
     }
   });
 
+  renderFavoritesOnMap();
+  setFavoritesLayerVisibility(true);
+  addFavoritesLayerToggleControl();
+
   map.on('mousemove', layer_names, (e) => {
+    let favoriteHits = map.queryRenderedFeatures(e.point, { layers: [favoritesLayerId] });
+    if (favoriteHits.length > 0) {
+      map._canvas.style.cursor = 'pointer';
+      return;
+    }
     named_features = e.features.filter(f => f.properties.name)
     if (named_features.length > 0) {
       map._canvas.style.cursor = 'pointer';
     } else {
       map._canvas.style.cursor = 'default';
     }
+  });
+
+  map.on('mousemove', [favoritesLayerId], () => {
+    map._canvas.style.cursor = 'pointer';
+  });
+
+  map.on('click', [favoritesLayerId], (e) => {
+    if (!e.features || e.features.length === 0) return;
+    let feature = e.features[0];
+    let props = feature.properties || {};
+    let osm_type = props.__favorite_osm_type;
+    let osm_id = props.__favorite_osm_id;
+    if (!osm_type || !osm_id) return;
+    if (e.originalEvent && typeof e.originalEvent.stopPropagation === 'function') {
+      e.originalEvent.stopPropagation();
+    }
+    fetchFirstOsmDetails(osm_type, osm_id);
   });
 
 
@@ -621,6 +853,10 @@ map.on('load', (e) => {
   }
 
   map.on('click', (e) => {
+    let favoriteHits = map.queryRenderedFeatures(e.point, { layers: [favoritesLayerId] });
+    if (favoriteHits.length > 0) {
+      return;
+    }
     sidebarElem.classList.add('hidden');
     clearMapHighlight();
     clearSidebar();
