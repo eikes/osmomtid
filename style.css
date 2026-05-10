@@ -51,18 +51,33 @@
   gap: 10px;
 }
 
-#favorite-toggle {
+#title-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+#favorite-toggle,
+#sidebar-close {
   border: 1px solid #c9d8ff;
   background: #f3f7ff;
   color: #4974d8;
   border-radius: 8px;
-  font-size: 24px;
   line-height: 1;
   width: 38px;
   height: 38px;
   padding: 0;
   cursor: pointer;
   flex-shrink: 0;
+}
+
+#favorite-toggle {
+  font-size: 24px;
+}
+
+#sidebar-close {
+  font-size: 28px;
 }
 
 #favorite-toggle.active {

@@ -12,5 +12,6 @@ export const elements = {
   contact: document.getElementById('contact'),
   address: document.getElementById('address'),
   extract: document.getElementById('extract'),
-  favoriteToggle: document.getElementById('favorite-toggle')
+  favoriteToggle: document.getElementById('favorite-toggle'),
+  sidebarClose: document.getElementById('sidebar-close')
 };

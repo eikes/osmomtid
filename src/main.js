@@ -44,7 +44,8 @@ map.on('load', () => {
 
   const sidebar = createSidebarRenderer({
     isFavorite: favoritesStore.isFavorite,
-    onToggleFavorite: () => controller.toggleCurrentFavorite()
+    onToggleFavorite: () => controller.toggleCurrentFavorite(),
+    onClose: () => controller.clearSelection()
   });
 
   const favoritesLayer = createFavoritesLayer(map, favoritesStore, (osmType, osmId) => {

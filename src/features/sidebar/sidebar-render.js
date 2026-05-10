@@ -8,7 +8,7 @@ import {
   fetchWikidataEntity
 } from '../../services/wiki.js';
 
-export function createSidebarRenderer({ isFavorite, onToggleFavorite }) {
+export function createSidebarRenderer({ isFavorite, onToggleFavorite, onClose }) {
   let currentSelection = null;
 
   elements.favoriteToggle.addEventListener('click', () => {
@@ -17,6 +17,12 @@ export function createSidebarRenderer({ isFavorite, onToggleFavorite }) {
       updateFavoriteButton();
     }
   });
+
+  if (elements.sidebarClose) {
+    elements.sidebarClose.addEventListener('click', () => {
+      onClose();
+    });
+  }
 
   function show() {
     elements.sidebar.classList.remove('hidden');
