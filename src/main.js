@@ -1,6 +1,7 @@
 import { createMapHighlight } from './features/highlight/map-highlight.js';
 import { createFavoritesStore } from './features/favorites/favorites-store.js';
 import { createFavoritesLayer } from './features/favorites/favorites-layer.js';
+import { addNominatimGeocoderControl } from './features/geocoder/nominatim-geocoder.js';
 import { createSidebarRenderer } from './features/sidebar/sidebar-render.js';
 import { createSelectionController } from './features/selection/selection-controller.js';
 
@@ -31,6 +32,8 @@ map.addControl(
     showUserHeading: true
   })
 );
+
+addNominatimGeocoderControl(map);
 
 map.on('load', () => {
   const layerNames = Object.keys(map.style._layers);
