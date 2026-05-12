@@ -2,15 +2,20 @@ import { createMapHighlight } from './features/highlight/map-highlight.js';
 import { createFavoritesStore } from './features/favorites/favorites-store.js';
 import { createFavoritesLayer } from './features/favorites/favorites-layer.js';
 import { addNominatimGeocoderControl } from './features/geocoder/nominatim-geocoder.js';
+import { bindMapViewPersistence, getInitialMapView } from './features/map-view/persisted-map-view.js';
 import { createSidebarRenderer } from './features/sidebar/sidebar-render.js';
 import { createSelectionController } from './features/selection/selection-controller.js';
+
+const initialMapView = getInitialMapView();
 
 const map = new maplibregl.Map({
   container: 'map',
   hash: true,
   style: 'https://tiles.openfreemap.org/styles/liberty',
-  center: [13.5, 52.5],
-  zoom: 10
+  center: initialMapView.center,
+  zoom: initialMapView.zoom,
+  bearing: initialMapView.bearing,
+  pitch: initialMapView.pitch
 });
 window.mp = map;
 
@@ -34,6 +39,7 @@ map.addControl(
 );
 
 addNominatimGeocoderControl(map);
+bindMapViewPersistence(map);
 
 map.on('load', () => {
   const layerNames = Object.keys(map.style._layers);
